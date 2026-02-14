@@ -137,7 +137,6 @@
       color: var(--good);
     }
 
-    .next-btn,
     .restart-btn {
       margin-top: 14px;
       background: #ffe9a8;
@@ -177,7 +176,6 @@
 
         <div class="choices" id="choices"></div>
         <p class="message" id="message"></p>
-        <button class="next-btn hidden" id="nextBtn">Next Scene ➜</button>
       </div>
 
       <div id="endArea" class="hidden end-card">
@@ -225,7 +223,6 @@
     const sceneTextEl = document.getElementById('sceneText');
     const choicesEl = document.getElementById('choices');
     const messageEl = document.getElementById('message');
-    const nextBtn = document.getElementById('nextBtn');
     const sceneArea = document.getElementById('sceneArea');
     const endArea = document.getElementById('endArea');
     const endMessage = document.getElementById('endMessage');
@@ -238,7 +235,6 @@
       sceneTextEl.textContent = scene.text;
       choicesEl.innerHTML = '';
       messageEl.textContent = '';
-      nextBtn.classList.add('hidden');
 
       scene.choices.forEach((choice) => {
         const button = document.createElement('button');
@@ -249,33 +245,32 @@
     }
 
     function pickChoice(choice, allChoices) {
-      score += choice.points;
-      scoreEl.textContent = score;
       messageEl.textContent = choice.feedback;
 
-      const buttons = choicesEl.querySelectorAll('button');
-      buttons.forEach((btn, index) => {
-        btn.disabled = true;
-        if (allChoices[index].points > 0) {
-          btn.style.background = '#d8ffd6';
-        }
-      });
-
       if (choice.points > 0) {
-        nextBtn.classList.remove('hidden');
+        score += choice.points;
+        scoreEl.textContent = score;
+
+        const buttons = choicesEl.querySelectorAll('button');
+        buttons.forEach((btn, index) => {
+          btn.disabled = true;
+          if (allChoices[index].points > 0) {
+            btn.style.background = '#d8ffd6';
+          }
+        });
+
+        setTimeout(() => {
+          currentScene += 1;
+          if (currentScene < scenes.length) {
+            renderScene();
+          } else {
+            showEnd();
+          }
+        }, 900);
       } else {
-        messageEl.textContent += ' You can do it! Pick the thoughtful choice next time.';
+        messageEl.textContent += ' Let\'s try again. Think about what is safe and kind.';
       }
     }
-
-    nextBtn.addEventListener('click', () => {
-      currentScene += 1;
-      if (currentScene < scenes.length) {
-        renderScene();
-      } else {
-        showEnd();
-      }
-    });
 
     function showEnd() {
       sceneArea.classList.add('hidden');
