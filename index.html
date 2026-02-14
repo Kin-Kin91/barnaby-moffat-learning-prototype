@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barnaby & Moffat Choice Adventure</title>
+  <style>
+    :root {
+      --sky: #c8ebff;
+      --grass: #b8f3b0;
+      --card: #ffffff;
+      --barnaby: #2f7fbf;
+      --moffat: #f47b20;
+      --accent: #ffde59;
+      --good: #2f9e44;
+      --text: #2e2e2e;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Trebuchet MS", "Comic Sans MS", "Arial", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, var(--sky) 0 55%, var(--grass) 55% 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 5px solid #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #ffd3f0, #fff2a3);
+      padding: 16px;
+      text-align: center;
+      border-bottom: 3px dashed #fff;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.8vw, 2rem);
+    }
+
+    .scoreboard {
+      margin-top: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #4b3f72;
+    }
+
+    .content {
+      padding: 22px;
+    }
+
+    .scene-tag {
+      display: inline-block;
+      padding: 6px 12px;
+      background: var(--accent);
+      border-radius: 999px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .scene-title {
+      margin: 0 0 10px;
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    }
+
+    .scene-text {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .characters {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .character {
+      border-radius: 14px;
+      padding: 12px;
+      color: white;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .barnaby {
+      background: var(--barnaby);
+    }
+
+    .moffat {
+      background: var(--moffat);
+    }
+
+    .choices {
+      display: grid;
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      text-align: left;
+      background: #f1f9ff;
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    button:hover,
+    button:focus-visible {
+      background: #dff2ff;
+      transform: translateY(-1px);
+      outline: 3px solid #a7dbff;
+    }
+
+    .message {
+      margin-top: 14px;
+      min-height: 52px;
+      font-weight: 700;
+      color: var(--good);
+    }
+
+    .next-btn,
+    .restart-btn {
+      margin-top: 14px;
+      background: #ffe9a8;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .end-card {
+      text-align: center;
+      padding: 12px;
+      background: #fff7d6;
+      border-radius: 16px;
+    }
+  </style>
+</head>
+<body>
+  <main class="game" aria-live="polite">
+    <section class="header">
+      <h1>🌟 Barnaby & Moffat: Choice Adventure 🌟</h1>
+      <div class="scoreboard">Points: <span id="score">0</span></div>
+    </section>
+
+    <section class="content">
+      <div id="sceneArea">
+        <span class="scene-tag" id="sceneTag">Scene 1</span>
+        <h2 class="scene-title" id="sceneTitle"></h2>
+        <p class="scene-text" id="sceneText"></p>
+
+        <div class="characters">
+          <div class="character barnaby">Barnaby<br><small>calm & thoughtful</small></div>
+          <div class="character moffat">Moffat<br><small>playful & curious</small></div>
+        </div>
+
+        <div class="choices" id="choices"></div>
+        <p class="message" id="message"></p>
+        <button class="next-btn hidden" id="nextBtn">Next Scene ➜</button>
+      </div>
+
+      <div id="endArea" class="hidden end-card">
+        <h2>Great playing! 🎉</h2>
+        <p id="endMessage"></p>
+        <button class="restart-btn" id="restartBtn">Play Again</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const scenes = [
+      {
+        title: "Toy Time Tidy-Up",
+        text: "Moffat builds a huge block tower. Blocks are now all over the floor. What should they do next?",
+        choices: [
+          { text: "Kick the blocks and run.", points: 0, feedback: "That is a big Moffat moment! Let's try a kinder choice." },
+          { text: "Work together and put blocks in the box.", points: 2, feedback: "Barnaby breakthrough! Team tidy-up keeps everyone safe. ✅" }
+        ]
+      },
+      {
+        title: "Snack Sharing",
+        text: "There is one banana left at snack time. A friend looks hungry.",
+        choices: [
+          { text: "Hide the banana and eat it alone.", points: 0, feedback: "Oops, that can make friends sad." },
+          { text: "Split the banana and share.", points: 2, feedback: "Kind choice! Sharing helps everyone feel happy. 💛" }
+        ]
+      },
+      {
+        title: "Rainy Day Drawing",
+        text: "Moffat splashes paint everywhere. The table is messy. What's the best plan?",
+        choices: [
+          { text: "Leave the mess and start jumping.", points: 0, feedback: "Funny, but the room still needs care." },
+          { text: "Get cloths, clean up, then draw a rainbow together.", points: 2, feedback: "Amazing Barnaby breakthrough! Clean first, then more fun. 🌈" }
+        ]
+      }
+    ];
+
+    let currentScene = 0;
+    let score = 0;
+
+    const scoreEl = document.getElementById('score');
+    const sceneTagEl = document.getElementById('sceneTag');
+    const sceneTitleEl = document.getElementById('sceneTitle');
+    const sceneTextEl = document.getElementById('sceneText');
+    const choicesEl = document.getElementById('choices');
+    const messageEl = document.getElementById('message');
+    const nextBtn = document.getElementById('nextBtn');
+    const sceneArea = document.getElementById('sceneArea');
+    const endArea = document.getElementById('endArea');
+    const endMessage = document.getElementById('endMessage');
+    const restartBtn = document.getElementById('restartBtn');
+
+    function renderScene() {
+      const scene = scenes[currentScene];
+      sceneTagEl.textContent = `Scene ${currentScene + 1}`;
+      sceneTitleEl.textContent = scene.title;
+      sceneTextEl.textContent = scene.text;
+      choicesEl.innerHTML = '';
+      messageEl.textContent = '';
+      nextBtn.classList.add('hidden');
+
+      scene.choices.forEach((choice) => {
+        const button = document.createElement('button');
+        button.textContent = choice.text;
+        button.addEventListener('click', () => pickChoice(choice, scene.choices));
+        choicesEl.appendChild(button);
+      });
+    }
+
+    function pickChoice(choice, allChoices) {
+      score += choice.points;
+      scoreEl.textContent = score;
+      messageEl.textContent = choice.feedback;
+
+      const buttons = choicesEl.querySelectorAll('button');
+      buttons.forEach((btn, index) => {
+        btn.disabled = true;
+        if (allChoices[index].points > 0) {
+          btn.style.background = '#d8ffd6';
+        }
+      });
+
+      if (choice.points > 0) {
+        nextBtn.classList.remove('hidden');
+      } else {
+        messageEl.textContent += ' You can do it! Pick the thoughtful choice next time.';
+      }
+    }
+
+    nextBtn.addEventListener('click', () => {
+      currentScene += 1;
+      if (currentScene < scenes.length) {
+        renderScene();
+      } else {
+        showEnd();
+      }
+    });
+
+    function showEnd() {
+      sceneArea.classList.add('hidden');
+      endArea.classList.remove('hidden');
+
+      if (score >= 5) {
+        endMessage.textContent = `You got ${score} points! Super thoughtful! Barnaby and Moffat are proud of you!`; 
+      } else if (score >= 3) {
+        endMessage.textContent = `You got ${score} points! Nice kind choices. Keep practicing!`;
+      } else {
+        endMessage.textContent = `You got ${score} points. Good try! Next time, look for Barnaby breakthroughs.`;
+      }
+    }
+
+    restartBtn.addEventListener('click', () => {
+      currentScene = 0;
+      score = 0;
+      scoreEl.textContent = score;
+      endArea.classList.add('hidden');
+      sceneArea.classList.remove('hidden');
+      renderScene();
+    });
+
+    renderScene();
+  </script>
+</body>
+</html>
